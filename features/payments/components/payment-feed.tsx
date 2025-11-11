@@ -19,11 +19,14 @@ import {
   RefreshCw,
   AlertCircle,
   RefreshCcw,
-  LoaderPinwheel,
   Loader,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { getStatusColor } from "@/lib/utils/get-status-color";
 import { PaymentForm } from "./payment-form";
+
+const ITEMS_PER_PAGE = 15;
 
 export function PaymentFeed() {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -32,6 +35,7 @@ export function PaymentFeed() {
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const loadPayments = async () => {
@@ -105,6 +109,11 @@ export function PaymentFeed() {
       )
     );
   };
+
+  const totalPages = Math.ceil(filteredPayments.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedPayments = filteredPayments.slice(startIndex, endIndex);
 
   return (
     <div className="space-y-4">
@@ -206,7 +215,7 @@ export function PaymentFeed() {
                     </td>
                   </tr>
                 ) : (
-                  filteredPayments.map((payment) => (
+                  paginatedPayments.map((payment) => (
                     <tr
                       key={payment.id}
                       className="border-b border-border/50 hover:bg-secondary/10 transition-colors"
@@ -262,6 +271,57 @@ export function PaymentFeed() {
               </tbody>
             </table>
           </div>
+
+          {filteredPayments.length > 0 && (
+            <div className="flex items-center justify-between border-t border-border pt-4">
+              <div className="text-sm text-muted-foreground">
+                Showing {startIndex + 1} to{" "}
+                {Math.min(endIndex, filteredPayments.length)} of{" "}
+                {filteredPayments.length} payments
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="flex items-center gap-1"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                <div className="flex items-center gap-1 px-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(page)}
+                        className={currentPage === page ? "min-w-9" : "min-w-9"}
+                      >
+                        {page}
+                      </Button>
+                    )
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="flex items-center gap-1"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
 
           {filteredPayments.some(
             (p) => p.status === "FAILED" && p.errorMessage
