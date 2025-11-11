@@ -20,6 +20,7 @@ interface PaymentFormData {
   id: string;
   amount: string;
   recipientName: string;
+  currency: string;
   recipientAccount: string;
 }
 
@@ -28,6 +29,7 @@ export function PaymentForm() {
     id: `PAY-${Date.now().toString().slice(-6)}`,
     amount: "",
     recipientName: "",
+    currency: "ETB",
     recipientAccount: "",
   }));
   const [submitted, setSubmitted] = useState(false);
@@ -62,6 +64,7 @@ export function PaymentForm() {
         id: `PAY-${Date.now().toString().slice(-6)}`,
         amount: "",
         recipientName: "",
+        currency: "ETB",
         recipientAccount: "",
       });
     }, 4000);
@@ -116,8 +119,21 @@ export function PaymentForm() {
                 required
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="currency">Currency</Label>
+              <select
+                id="currency"
+                name="currency"
+                value={formData.currency}
+                onChange={handleInputChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
+              >
+                <option value="ETB">ETB</option>
+                <option value="USD">USD</option>
+              </select>
+            </div>
 
-            <div className="space-y-2 col-span-full">
+            <div className="space-y-2 ">
               <Label htmlFor="recipientName">Recipient Name</Label>
               <Input
                 id="recipientName"

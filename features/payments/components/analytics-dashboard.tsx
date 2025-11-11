@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
@@ -8,7 +8,6 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { generateMockPayments, calculateAnalytics } from "@/data/mock";
 import {
   LineChart,
   Line,
@@ -24,39 +23,49 @@ import {
 import { ArrowUp, TrendingUp, Clock, Zap } from "lucide-react";
 
 export function AnalyticsDashboard() {
-  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
-  //eslint-disable-next-line
-  const [chartData, setChartData] = useState<any[]>([]);
-  //eslint-disable-next-line
-  const [timeSeriesData, setTimeSeriesData] = useState<any[]>([]);
+  const { data: analytics, isLoading } = useQuery<AnalyticsData>({
+    queryKey: ["analytics"],
+    queryFn: async () => {
+      const response = await fetch("/api/analytics");
+      if (!response.ok) throw new Error("Failed to fetch analytics");
+      return response.json();
+    },
+    refetchInterval: 5000, // Auto-refresh every 5 seconds
+  });
 
-  useEffect(() => {
-    const updateAnalytics = () => {
-      const payments = generateMockPayments();
-      const data = calculateAnalytics(payments);
-      setAnalytics(data);
+  if (isLoading || !analytics) {
+    return (
+      <div className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array(4)
+            .fill(0)
+            .map((_, i) => (
+              <Card key={i}>
+                <CardHeader className="pb-3">
+                  <div className="h-4 bg-muted rounded animate-pulse w-20" />
+                </CardHeader>
+                <CardContent>
+                  <div className="h-8 bg-muted rounded animate-pulse" />
+                </CardContent>
+              </Card>
+            ))}
+        </div>
+      </div>
+    );
+  }
 
-      setChartData([
-        { name: "Completed", value: data.completedCount, color: "#22c55e" },
-        { name: "Failed", value: data.failedCount, color: "#ef4444" },
-        { name: "Pending", value: data.pendingCount, color: "#eab308" },
-        { name: "In Progress", value: data.inProgressCount, color: "#3b82f6" },
-      ]);
+  const chartData = [
+    { name: "Completed", value: analytics.completedCount, color: "#22c55e" },
+    { name: "Failed", value: analytics.failedCount, color: "#ef4444" },
+    { name: "Pending", value: analytics.pendingCount, color: "#eab308" },
+    { name: "In Progress", value: analytics.inProgressCount, color: "#3b82f6" },
+  ];
 
-      const series = Array.from({ length: 12 }, (_, i) => ({
-        time: `${11 - i}:00`,
-        tps: (Math.random() * 1.8 + 0.2).toFixed(2),
-        processedCount: Math.floor(Math.random() * 50) + 20,
-      })).reverse();
-      setTimeSeriesData(series);
-    };
-
-    updateAnalytics();
-    const interval = setInterval(updateAnalytics, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  if (!analytics) return <div>Loading analytics...</div>;
+  const timeSeriesData = Array.from({ length: 12 }, (_, i) => ({
+    time: `${11 - i}:00`,
+    tps: (Math.random() * 1.8 + 0.2).toFixed(2),
+    processedCount: Math.floor(Math.random() * 50) + 20,
+  })).reverse();
 
   return (
     <div className="space-y-6">
@@ -134,6 +143,7 @@ export function AnalyticsDashboard() {
         </Card>
       </div>
 
+      {/* Current TPS */}
       <Card className="bg-gradient-to-br from-warning/10 to-warning/5 border-warning/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -159,41 +169,6 @@ export function AnalyticsDashboard() {
               ? "⚠️ High load - approaching limit"
               : "✓ Normal operation"}
           </p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Status Summary</CardTitle>
-          <CardDescription>Quick overview of payment statuses</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-lg bg-yellow-500/10 p-4 border border-yellow-500/20">
-              <div className="text-sm text-muted-foreground">Pending</div>
-              <div className="text-2xl font-bold text-yellow-400">
-                {analytics.pendingCount}
-              </div>
-            </div>
-            <div className="rounded-lg bg-blue-500/10 p-4 border border-blue-500/20">
-              <div className="text-sm text-muted-foreground">In Progress</div>
-              <div className="text-2xl font-bold text-blue-400">
-                {analytics.inProgressCount}
-              </div>
-            </div>
-            <div className="rounded-lg bg-green-500/10 p-4 border border-green-500/20">
-              <div className="text-sm text-muted-foreground">Completed</div>
-              <div className="text-2xl font-bold text-green-400">
-                {analytics.completedCount}
-              </div>
-            </div>
-            <div className="rounded-lg bg-red-500/10 p-4 border border-red-500/20">
-              <div className="text-sm text-muted-foreground">Failed</div>
-              <div className="text-2xl font-bold text-red-400">
-                {analytics.failedCount}
-              </div>
-            </div>
-          </div>
         </CardContent>
       </Card>
 
@@ -261,6 +236,42 @@ export function AnalyticsDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Payment Status Timeline */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Status Summary</CardTitle>
+          <CardDescription>Quick overview of payment statuses</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-lg bg-yellow-500/10 p-4 border border-yellow-500/20">
+              <div className="text-sm text-muted-foreground">Pending</div>
+              <div className="text-2xl font-bold text-yellow-400">
+                {analytics.pendingCount}
+              </div>
+            </div>
+            <div className="rounded-lg bg-blue-500/10 p-4 border border-blue-500/20">
+              <div className="text-sm text-muted-foreground">In Progress</div>
+              <div className="text-2xl font-bold text-blue-400">
+                {analytics.inProgressCount}
+              </div>
+            </div>
+            <div className="rounded-lg bg-green-500/10 p-4 border border-green-500/20">
+              <div className="text-sm text-muted-foreground">Completed</div>
+              <div className="text-2xl font-bold text-green-400">
+                {analytics.completedCount}
+              </div>
+            </div>
+            <div className="rounded-lg bg-red-500/10 p-4 border border-red-500/20">
+              <div className="text-sm text-muted-foreground">Failed</div>
+              <div className="text-2xl font-bold text-red-400">
+                {analytics.failedCount}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

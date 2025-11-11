@@ -45,16 +45,6 @@ export function updatePaymentStatus(
   return payment;
 }
 
-export function retryPayment(id: string): Payment | undefined {
-  const payment = payments.find((p) => p.id === id);
-  if (payment && payment.status === "FAILED") {
-    payment.status = "PENDING";
-    payment.errorMessage = undefined;
-    payment.updatedAt = new Date();
-  }
-  return payment;
-}
-
 export function getAnalytics(): AnalyticsData {
   return calculateAnalytics(payments);
 }
@@ -71,4 +61,14 @@ export function searchPayments(query: string): Payment[] {
       p.recipientName.toLowerCase().includes(q) ||
       p.recipientAccount.toLowerCase().includes(q)
   );
+}
+
+export function retryPayment(id: string): Payment | undefined {
+  const payment = payments.find((p) => p.id === id);
+  if (payment && payment.status === "FAILED") {
+    payment.status = "PENDING";
+    payment.errorMessage = undefined;
+    payment.updatedAt = new Date();
+  }
+  return payment;
 }

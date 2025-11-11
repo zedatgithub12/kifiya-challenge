@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { generateMockPayments } from "@/data/mock";
 import { LogsDialog } from "./logs-dialog";
 import {
   Search,
@@ -25,95 +24,87 @@ import {
 } from "lucide-react";
 import { getStatusColor } from "@/lib/utils/get-status-color";
 import { PaymentForm } from "./payment-form";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const ITEMS_PER_PAGE = 15;
 
 export function PaymentFeed() {
-  const [payments, setPayments] = useState<Payment[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<PaymentStatus | "ALL">(
     "ALL"
   );
   const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    const loadPayments = async () => {
-      setLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setPayments(generateMockPayments());
-      setLoading(false);
-    };
+  const queryClient = useQueryClient();
 
-    loadPayments();
-    const interval = setInterval(() => {
-      setPayments((prev) => {
-        const updated = [...prev];
-        const randomIndex = Math.floor(Math.random() * updated.length);
-        const statuses: PaymentStatus[] = [
-          "PENDING",
-          "IN_PROGRESS",
-          "COMPLETED",
-          "FAILED",
-        ];
-        const randomStatus =
-          statuses[Math.floor(Math.random() * statuses.length)];
-
-        if (
-          updated[randomIndex].status !== "COMPLETED" &&
-          updated[randomIndex].status !== "FAILED"
-        ) {
-          updated[randomIndex].status = randomStatus;
-          updated[randomIndex].updatedAt = new Date();
-        }
-
-        return updated;
+  const { data, isLoading } = useQuery<PaymentsResponse>({
+    queryKey: ["payments", selectedStatus, searchQuery, currentPage],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        status: selectedStatus,
+        search: searchQuery,
+        page: currentPage.toString(),
+        limit: ITEMS_PER_PAGE.toString(),
       });
-    }, 3000);
 
-    return () => clearInterval(interval);
-  }, []);
+      const response = await fetch(`/api/payments?${params}`);
+      if (!response.ok) throw new Error("Failed to fetch payments");
+      return response.json();
+    },
+  });
 
-  const filteredPayments = useMemo(() => {
-    let filtered = payments;
+  const filteredPayments = data?.data || [];
+  const pagination = data?.pagination;
 
-    if (selectedStatus !== "ALL") {
-      filtered = filtered.filter(
-        (payment) => payment?.status === selectedStatus
-      );
-    }
-
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (payment) =>
-          payment?.id.toLowerCase().includes(q) ||
-          payment?.recipientName.toLowerCase().includes(q) ||
-          payment?.recipientAccount.toLowerCase().includes(q)
-      );
-    }
-
-    return filtered;
-  }, [payments, selectedStatus, searchQuery]);
+  const retryMutation = useMutation({
+    mutationFn: async (paymentId: string) => {
+      const response = await fetch(`/api/payments/${paymentId}/retry`, {
+        method: "POST",
+      });
+      if (!response.ok) throw new Error("Retry failed");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      queryClient.invalidateQueries({ queryKey: ["analytics"] });
+    },
+  });
 
   const handleRetry = (id: string) => {
-    setPayments((prev) =>
-      prev.map((payment) =>
-        payment.id === id
-          ? {
-              ...payment,
-              status: "PENDING" as PaymentStatus,
-              errorMessage: undefined,
-            }
-          : payment
-      )
-    );
+    retryMutation.mutate(id);
   };
 
-  const totalPages = Math.ceil(filteredPayments.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedPayments = filteredPayments.slice(startIndex, endIndex);
+  const handleRefresh = () => {
+    setCurrentPage(1);
+    queryClient.invalidateQueries({ queryKey: ["payments"] });
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
+
+  const handleStatusFilter = (status: PaymentStatus | "ALL") => {
+    setSelectedStatus(status);
+    setCurrentPage(1);
+  };
+
+  const formatMoney = (
+    amount: number | string | null | undefined,
+    currency = "ETB"
+  ) => {
+    if (amount == null || amount === "") return "";
+    const value = typeof amount === "number" ? amount : Number(amount);
+    if (Number.isNaN(value)) return `${amount} ${currency}`;
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: "currency",
+        currency,
+      }).format(value);
+    } catch {
+      return `${value} ${currency}`;
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -136,17 +127,20 @@ export function PaymentFeed() {
               <Input
                 placeholder="Search by Payment ID, recipient name, or account..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleSearch(e.target.value)}
                 className="pl-10"
               />
             </div>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPayments(generateMockPayments())}
-              className="flex items-center gap-2"
+              onClick={handleRefresh}
+              disabled={isLoading}
+              className="flex items-center gap-2 bg-transparent"
             >
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw
+                className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+              />
               Refresh
             </Button>
           </div>
@@ -160,7 +154,7 @@ export function PaymentFeed() {
                 key={status}
                 variant={selectedStatus === status ? "default" : "outline"}
                 size="sm"
-                onClick={() => setSelectedStatus(status)}
+                onClick={() => handleStatusFilter(status)}
                 className={selectedStatus === status ? "bg-primary" : ""}
               >
                 {status === "ALL" ? "All" : status}
@@ -193,7 +187,7 @@ export function PaymentFeed() {
                 </tr>
               </thead>
               <tbody>
-                {loading ? (
+                {isLoading ? (
                   <tr>
                     <td
                       colSpan={6}
@@ -215,7 +209,7 @@ export function PaymentFeed() {
                     </td>
                   </tr>
                 ) : (
-                  paginatedPayments.map((payment) => (
+                  filteredPayments.map((payment) => (
                     <tr
                       key={payment.id}
                       className="border-b border-border/50 hover:bg-secondary/10 transition-colors"
@@ -237,7 +231,7 @@ export function PaymentFeed() {
                       </td>
                       <td className="px-4 py-3 text-right">
                         <span className="font-medium text-foreground">
-                          {payment.amount} {payment.currency}
+                          {formatMoney(payment.amount, payment.currency)}
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -248,7 +242,15 @@ export function PaymentFeed() {
                         </Badge>
                       </td>
                       <td className="px-4 py-3 text-sm text-muted-foreground">
-                        {payment.createdAt.toLocaleString()}
+                        {payment.createdAt
+                          ? new Date(payment.createdAt).toLocaleString(
+                              undefined,
+                              {
+                                dateStyle: "long",
+                                timeStyle: "short",
+                              }
+                            )
+                          : "—"}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <div className="flex items-center justify-between gap-2">
@@ -272,12 +274,12 @@ export function PaymentFeed() {
             </table>
           </div>
 
-          {filteredPayments.length > 0 && (
+          {pagination && pagination.total > 0 && (
             <div className="flex items-center justify-between border-t border-border pt-4">
               <div className="text-sm text-muted-foreground">
-                Showing {startIndex + 1} to{" "}
-                {Math.min(endIndex, filteredPayments.length)} of{" "}
-                {filteredPayments.length} payments
+                Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
+                {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+                of {pagination.total} payments
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -286,34 +288,40 @@ export function PaymentFeed() {
                   onClick={() =>
                     setCurrentPage((prev) => Math.max(1, prev - 1))
                   }
-                  disabled={currentPage === 1}
+                  disabled={pagination.page === 1 || isLoading}
                   className="flex items-center gap-1"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Previous
                 </Button>
                 <div className="flex items-center gap-1 px-2">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setCurrentPage(page)}
-                        className={currentPage === page ? "min-w-9" : "min-w-9"}
-                      >
-                        {page}
-                      </Button>
-                    )
-                  )}
+                  {Array.from(
+                    { length: pagination.totalPages },
+                    (_, i) => i + 1
+                  ).map((page) => (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(page)}
+                      disabled={isLoading}
+                      className={currentPage === page ? "min-w-9" : "min-w-9"}
+                    >
+                      {page}
+                    </Button>
+                  ))}
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                    setCurrentPage((prev) =>
+                      Math.min(pagination.totalPages, prev + 1)
+                    )
                   }
-                  disabled={currentPage === totalPages}
+                  disabled={
+                    pagination.page === pagination.totalPages || isLoading
+                  }
                   className="flex items-center gap-1"
                 >
                   Next
@@ -327,10 +335,7 @@ export function PaymentFeed() {
             (p) => p.status === "FAILED" && p.errorMessage
           ) && (
             <Alert className="border-destructive/30 bg-destructive/5 mt-4">
-              <AlertCircle
-                className="h-4 w-4"
-                color="oklch(70.4% 0.191 22.216) "
-              />
+              <AlertCircle className="h-4 w-4 text-destructive" />
               <AlertDescription className="text-destructive/90">
                 {
                   filteredPayments.find((p) => p.status === "FAILED")

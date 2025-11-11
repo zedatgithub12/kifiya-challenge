@@ -12,3 +12,13 @@ interface Payment {
   errorMessage?: string;
   processingTime?: number;
 }
+
+interface PaymentsResponse {
+  data: Payment[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}

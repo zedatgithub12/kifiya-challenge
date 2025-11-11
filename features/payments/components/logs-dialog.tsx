@@ -1,6 +1,5 @@
 "use client";
 
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,19 +17,24 @@ interface LogsDialogProps {
 }
 
 export function LogsDialog({ payment }: LogsDialogProps) {
+  const createdTime =
+    typeof payment.createdAt === "string"
+      ? new Date(payment.createdAt).getTime()
+      : payment.createdAt.getTime();
+
   const mockLogs = [
     {
-      timestamp: new Date(payment.createdAt.getTime()).toISOString(),
+      timestamp: new Date(createdTime).toISOString(),
       level: "INFO",
       message: `Payment ${payment.id} submitted to gateway`,
     },
     {
-      timestamp: new Date(payment.createdAt.getTime() + 1000).toISOString(),
+      timestamp: new Date(createdTime + 1000).toISOString(),
       level: "INFO",
       message: "Validating payment details",
     },
     {
-      timestamp: new Date(payment.createdAt.getTime() + 2000).toISOString(),
+      timestamp: new Date(createdTime + 2000).toISOString(),
       level: payment.status === "FAILED" ? "ERROR" : "INFO",
       message:
         payment.status === "FAILED"
@@ -38,7 +42,7 @@ export function LogsDialog({ payment }: LogsDialogProps) {
           : "Payment routed to processing",
     },
     {
-      timestamp: new Date(payment.createdAt.getTime() + 3000).toISOString(),
+      timestamp: new Date(createdTime + 3000).toISOString(),
       level: payment.status === "COMPLETED" ? "SUCCESS" : "INFO",
       message:
         payment.status === "COMPLETED"
