@@ -14,7 +14,16 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { generateMockPayments } from "@/data/mock";
 import { LogsDialog } from "./logs-dialog";
-import { Search, RefreshCw, AlertCircle, RefreshCcw } from "lucide-react";
+import {
+  Search,
+  RefreshCw,
+  AlertCircle,
+  RefreshCcw,
+  LoaderPinwheel,
+  Loader,
+} from "lucide-react";
+import { getStatusColor } from "@/lib/utils/get-status-color";
+import { PaymentForm } from "./payment-form";
 
 export function PaymentFeed() {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -97,32 +106,21 @@ export function PaymentFeed() {
     );
   };
 
-  const getStatusColor = (status: PaymentStatus) => {
-    switch (status) {
-      case "COMPLETED":
-        return "bg-green-500/20 text-green-400 border-green-500/30";
-      case "FAILED":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
-      case "PENDING":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
-      case "IN_PROGRESS":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
-      default:
-        return "bg-muted text-muted-foreground";
-    }
-  };
-
   return (
     <div className="space-y-4">
       <Card>
-        <CardHeader>
-          <CardTitle>Payment Orders</CardTitle>
-          <CardDescription>
-            Real-time payment feed and status tracking
-          </CardDescription>
+        <CardHeader className="flex justify-between items-center">
+          <div>
+            <CardTitle>Payment Orders</CardTitle>
+            <CardDescription>
+              Real-time payment feed and status tracking
+            </CardDescription>
+          </div>
+          <div>
+            <PaymentForm />
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Search and Filter Bar */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -161,7 +159,6 @@ export function PaymentFeed() {
             ))}
           </div>
 
-          {/* Payment Table */}
           <div className="relative overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -193,7 +190,10 @@ export function PaymentFeed() {
                       colSpan={6}
                       className="py-8 text-center text-muted-foreground"
                     >
-                      Loading payments...
+                      <div className="w-full p-4 flex items-center justify-center gap-2">
+                        <Loader className="animate-spin" />{" "}
+                        <span>Loading payments... </span>
+                      </div>
                     </td>
                   </tr>
                 ) : filteredPayments.length === 0 ? (
@@ -263,12 +263,14 @@ export function PaymentFeed() {
             </table>
           </div>
 
-          {/* Error Display */}
           {filteredPayments.some(
             (p) => p.status === "FAILED" && p.errorMessage
           ) && (
             <Alert className="border-destructive/30 bg-destructive/5 mt-4">
-              <AlertCircle className="h-4 w-4 text-destructive" />
+              <AlertCircle
+                className="h-4 w-4"
+                color="oklch(70.4% 0.191 22.216) "
+              />
               <AlertDescription className="text-destructive/90">
                 {
                   filteredPayments.find((p) => p.status === "FAILED")

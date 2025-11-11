@@ -36,7 +36,6 @@ export function AnalyticsDashboard() {
       const data = calculateAnalytics(payments);
       setAnalytics(data);
 
-      // Status distribution for pie chart
       setChartData([
         { name: "Completed", value: data.completedCount, color: "#22c55e" },
         { name: "Failed", value: data.failedCount, color: "#ef4444" },
@@ -44,8 +43,6 @@ export function AnalyticsDashboard() {
         { name: "In Progress", value: data.inProgressCount, color: "#3b82f6" },
       ]);
 
-      // Time series data (last hour)
-      const now = Date.now();
       const series = Array.from({ length: 12 }, (_, i) => ({
         time: `${11 - i}:00`,
         tps: (Math.random() * 1.8 + 0.2).toFixed(2),
@@ -137,7 +134,6 @@ export function AnalyticsDashboard() {
         </Card>
       </div>
 
-      {/* Current TPS */}
       <Card className="bg-gradient-to-br from-warning/10 to-warning/5 border-warning/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -163,6 +159,41 @@ export function AnalyticsDashboard() {
               ? "⚠️ High load - approaching limit"
               : "✓ Normal operation"}
           </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Status Summary</CardTitle>
+          <CardDescription>Quick overview of payment statuses</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-lg bg-yellow-500/10 p-4 border border-yellow-500/20">
+              <div className="text-sm text-muted-foreground">Pending</div>
+              <div className="text-2xl font-bold text-yellow-400">
+                {analytics.pendingCount}
+              </div>
+            </div>
+            <div className="rounded-lg bg-blue-500/10 p-4 border border-blue-500/20">
+              <div className="text-sm text-muted-foreground">In Progress</div>
+              <div className="text-2xl font-bold text-blue-400">
+                {analytics.inProgressCount}
+              </div>
+            </div>
+            <div className="rounded-lg bg-green-500/10 p-4 border border-green-500/20">
+              <div className="text-sm text-muted-foreground">Completed</div>
+              <div className="text-2xl font-bold text-green-400">
+                {analytics.completedCount}
+              </div>
+            </div>
+            <div className="rounded-lg bg-red-500/10 p-4 border border-red-500/20">
+              <div className="text-sm text-muted-foreground">Failed</div>
+              <div className="text-2xl font-bold text-red-400">
+                {analytics.failedCount}
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -230,42 +261,6 @@ export function AnalyticsDashboard() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Payment Status Timeline */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Status Summary</CardTitle>
-          <CardDescription>Quick overview of payment statuses</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-lg bg-yellow-500/10 p-4 border border-yellow-500/20">
-              <div className="text-sm text-muted-foreground">Pending</div>
-              <div className="text-2xl font-bold text-yellow-400">
-                {analytics.pendingCount}
-              </div>
-            </div>
-            <div className="rounded-lg bg-blue-500/10 p-4 border border-blue-500/20">
-              <div className="text-sm text-muted-foreground">In Progress</div>
-              <div className="text-2xl font-bold text-blue-400">
-                {analytics.inProgressCount}
-              </div>
-            </div>
-            <div className="rounded-lg bg-green-500/10 p-4 border border-green-500/20">
-              <div className="text-sm text-muted-foreground">Completed</div>
-              <div className="text-2xl font-bold text-green-400">
-                {analytics.completedCount}
-              </div>
-            </div>
-            <div className="rounded-lg bg-red-500/10 p-4 border border-red-500/20">
-              <div className="text-sm text-muted-foreground">Failed</div>
-              <div className="text-2xl font-bold text-red-400">
-                {analytics.failedCount}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

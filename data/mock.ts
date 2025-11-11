@@ -15,7 +15,7 @@ export function generateMockPayments(): Payment[] {
     payments.push({
       id: `PAY-${String(i + 1).padStart(6, "0")}`,
       amount: Math.floor(Math.random() * 100000) + 100,
-      currency: ["ETB", "USD"][Math.floor(Math.random() * 3)],
+      currency: "ETB",
       recipientName: [
         "Abebe Kebede",
         "Solomon Alemu",
