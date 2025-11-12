@@ -55,7 +55,7 @@ https://kifiya-challenge.vercel.app
 |   |
 |   | 
 |   |
-|   |---------------- > There is also other folders created with a name that easily illustrate  the function operation handled in it
+|   |──────────  # There is also other folders created with a name that easily illustrate  the function operation handled in it
 |   |
 |   |
 |   |
