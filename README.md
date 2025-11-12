@@ -36,29 +36,28 @@ https://kifiya-challenge.vercel.app
 ├── app/
 │   ├── api/
 │   │   ├── payments/
-│   │   │   ├── route.ts           # GET: Fetch payments with filtering
-│   │   │   └── [id]/retry/route.ts # POST: Retry failed payment
-│   │   └── analytics/route.ts      # GET: Fetch analytics data
-│   ├── layout.tsx                  # Root layout with providers
-│   ├── page.tsx                    # Main dashboard page
-│   └── globals.css                 # Theme tokens and global styles
+│   │   │   ├── route.ts             # GET: Fetch payments with filtering
+│   │   │   └── [id]/retry/route.ts  # POST: Retry failed payment
+│   │   └── analytics/route.ts       # GET: Fetch analytics data
+│   ├── layout.tsx                   # Root layout with providers
+│   ├── page.tsx                     # Main dashboard page
+│   └── globals.css                  # Theme tokens and global styles
+│
 ├── components/
-│   ├── kifiya-ui/                  # a custom UI components created specifically for this project
-│   |── ui                          # a predefined folder for shadcn components 
+│   ├── kifiya-ui/                   # Custom UI components for this project
+│   └── ui/                          # Predefined shadcn/ui components
+│
 ├── data/
-|   ├── mock.ts                     # a helper function that generate a mock data
+│   └── mock.ts                      # Helper for generating mock payment data
+│
 ├── features/
 │   ├── payments/
-│   │   ├── components              # custom component specific to payment management feature
-│   │   ├── index.tsx               # Main payment processing page component
-|   |
-|   | 
-|   |
-|   |──────────  # There is also other folders created with a name that easily illustrate  the function operation handled in it
-|   |
-|   |
-|   |
-└── public/                         # Static assets
+│   │   ├── components/              # Components specific to payment management
+│   │   └── index.tsx                # Main payment processing page component
+│   └── ...                          # Other feature folders (self-descriptive)
+│
+└── public/                          # Static assets
+
 
 ## Setup Instructions
 
