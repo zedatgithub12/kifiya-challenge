@@ -33,7 +33,6 @@ https://kifiya-challenge.vercel.app
 
 ## Project Structure
 
-\`\`\`
 ├── app/
 │   ├── api/
 │   │   ├── payments/
@@ -60,7 +59,6 @@ https://kifiya-challenge.vercel.app
 |   |
 |   |
 └── public/                         # Static assets
-\`\`\`
 
 ## Setup Instructions
 
@@ -70,26 +68,23 @@ https://kifiya-challenge.vercel.app
 ### Installation
 
 1. **Clone the repository**
-   \`\`\`bash
+   
    git clone https://github.com/zedatgithub12/kifiya-challenge.git
    cd kifiya-challenge
-   \`\`\`
 
-2. **Install dependencies**
-   \`\`\`bash
+3. **Install dependencies**
    npm install
    # or
    pnpm install
-   \`\`\`
 
-3. **Run the development server**
+4. **Run the development server**
    \`\`\`bash
    npm run dev
    # or
    pnpm dev
    \`\`\`
 
-4. **Open in browser**
+5. **Open in browser**
    Navigate to `http://localhost:3000`
 
 ### Build for Production
