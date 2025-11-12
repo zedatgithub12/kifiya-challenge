@@ -9,6 +9,13 @@ Built with Next.js 16, React 19, and TailwindCSS, the dashboard provides a compl
 deployed link 
 https://kifiya-challenge.vercel.app
 
+## Screenshoots
+
+<img width="1905" height="876" alt="image" src="https://github.com/user-attachments/assets/68c1ab9f-6d45-4c97-87a7-726747161a70" />
+<img width="1892" height="868" alt="image" src="https://github.com/user-attachments/assets/b893059b-fa3c-451d-9348-93eb94403ca6" />
+<img width="1914" height="856" alt="image" src="https://github.com/user-attachments/assets/5515143f-a5e2-43aa-bf5d-65ad3a793688" />
+<img width="1903" height="877" alt="image" src="https://github.com/user-attachments/assets/2f78e6f0-cef8-4032-89e4-f326e55a87b1" />
+
 ## Key Features
 
 - **Payment Order Submission** - Submit new payments with validation
@@ -226,4 +233,5 @@ Submit 3+ payments quickly to see TPS warning in analytics dashboard.
 ## Deployment
 
 The deployment created and the project is accessible https://kifiya-challenge.vercel.app
+
 
