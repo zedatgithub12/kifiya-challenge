@@ -32,7 +32,7 @@ https://kifiya-challenge.vercel.app
 - **TypeScript**: Full type safety throughout
 
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 ├── app/
@@ -81,21 +81,21 @@ https://kifiya-challenge.vercel.app
    pnpm install
 
 4. **Run the development server**
-   \`\`\`bash
+   ```bash
    npm run dev
    # or
    pnpm dev
-   \`\`\`
+   ```
 
 5. **Open in browser**
    Navigate to `http://localhost:3000`
 
 ### Build for Production
 
-\`\`\`bash
+```bash
 npm run build
 npm run start
-\`\`\`
+```
 
 ## Architecture Overview
 
@@ -120,12 +120,12 @@ The dashboard uses a client-server architecture with server-side filtering and c
 
 ### Component Architecture
 
-\`\`\`
+```bash
 <DashboardShell>                    # Main layout
 ├── <Tabs>
 │   ├── <PaymentFeed />             # Table with filtering/pagination
 │   └── <AnalyticsDashboard />      # Charts and metrics
-\`\`\`
+```
 
 ### State Management
 
@@ -227,5 +227,3 @@ Submit 3+ payments quickly to see TPS warning in analytics dashboard.
 
 The deployment created and the project is accessible https://kifiya-challenge.vercel.app
 
-**Last Updated**: November 12 2025  
-**Status**: Complete & Production-Ready
