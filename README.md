@@ -1,36 +1,233 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kifiya Payment Processing Dashboard - 
 
-## Getting Started
+A modern, payment operations dashboard built for the Kifiya payment-processing. This dashboard enables internal operations teams to manage payment orders, track statuses in real-time, debug failures, and gain system insights.
 
-First, run the development server:
+## Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Built with Next.js 16, React 19, and TailwindCSS, the dashboard provides a complete operations experience for payment management.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+deployed link 
+https://kifiya-challenge.vercel.app
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Key Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Payment Order Submission** - Submit new payments with validation
+- **Live Payment Feed** - Real-time table view with search, filtering, and pagination
+- **Status Tracking** - View payment lifecycle (PENDING → IN_PROGRESS → COMPLETED/FAILED)
+- **Failure Handling** - Retry failed payments with error messaging and transaction logs
+- **Rate Limit Awareness** - Visual warning when system approaches 2 TPS limit
+- **Analytics Dashboard** - Real-time charts showing status distribution, TPS trends, and KPIs
+- **Responsive Design** - Fully responsive across mobile, tablet, and desktop
+- **Dark Theme** - Professional fintech-focused color scheme
 
-## Learn More
+## Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
+- **Framework**: Next.js 16 (App Router)
+- **UI Library**: React 19 with shadcn/ui components
+- **Data Fetching**: TanStack Query for caching and real-time updates
+- **Styling**: TailwindCSS v4
+- **Forms**: formik + Yup validation
+- **Charts**: Recharts for data visualization
+- **State Management**: custom Mock data  + TanStack Query cache
+- **TypeScript**: Full type safety throughout
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+\`\`\`
+├── app/
+│   ├── api/
+│   │   ├── payments/
+│   │   │   ├── route.ts           # GET: Fetch payments with filtering
+│   │   │   └── [id]/retry/route.ts # POST: Retry failed payment
+│   │   └── analytics/route.ts      # GET: Fetch analytics data
+│   ├── layout.tsx                  # Root layout with providers
+│   ├── page.tsx                    # Main dashboard page
+│   └── globals.css                 # Theme tokens and global styles
+├── components/
+│   ├── kifiya-ui/                  # a custom UI components created specifically for this project
+│   |── ui                          # a predefined folder for shadcn components 
+├── data/
+|   ├── mock.ts                     # a helper function that generate a mock data
+├── features/
+│   ├── payments/
+│   │   ├── components              # custom component specific to payment management feature
+│   │   ├── index.tsx               # Main payment processing page component
+|   |
+|   | 
+|   |
+|   |---------------- > There is also other folders created with a name that easily illustrate  the function operation handled in it
+|   |
+|   |
+|   |
+└── public/                         # Static assets
+\`\`\`
 
-## Deploy on Vercel
+## Setup Instructions
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Prerequisites
+- Node.js 18+ or pnpm
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Installation
+
+1. **Clone the repository**
+   \`\`\`bash
+   git clone https://github.com/zedatgithub12/kifiya-challenge.git
+   cd kifiya-challenge
+   \`\`\`
+
+2. **Install dependencies**
+   \`\`\`bash
+   npm install
+   # or
+   pnpm install
+   \`\`\`
+
+3. **Run the development server**
+   \`\`\`bash
+   npm run dev
+   # or
+   pnpm dev
+   \`\`\`
+
+4. **Open in browser**
+   Navigate to `http://localhost:3000`
+
+### Build for Production
+
+\`\`\`bash
+npm run build
+npm run start
+\`\`\`
+
+## Architecture Overview
+
+### Data Flow
+
+The dashboard uses a client-server architecture with server-side filtering and caching:
+
+1. **API Routes** - Next.js API routes handle data fetching and business logic
+   - `/api/payments` - Returns filtered/searched payments with pagination
+   - `/api/payments/[id]/retry` - Handles payment retry logic
+   - `/api/analytics` - Computes real-time analytics
+
+2. **TanStack Query** - Client-side data fetching with automatic caching
+   - Configured to auto-refetch every 3 seconds for real-time data
+   - Supports mutation-based cache invalidation on user actions
+   - Handles loading/error states elegantly
+
+3. **Mock Data System** - In-memory payment storage
+   - Payments update status based on timing
+   - Simulates realistic payment lifecycle (5-15 seconds per transition)
+   - Rate limiting simulation (2 TPS global limit)
+
+### Component Architecture
+
+\`\`\`
+<DashboardShell>                    # Main layout
+├── <Tabs>
+│   ├── <PaymentFeed />             # Table with filtering/pagination
+│   └── <AnalyticsDashboard />      # Charts and metrics
+\`\`\`
+
+### State Management
+
+- **Server State**: API routes + TanStack Query cache
+- **UI State**: React hooks (useState for filters, page, search)
+- **Global State**: None (unnecessary for this scope)
+
+## Features in Detail
+
+### 1. Payment Submission Form
+- Auto-generated Payment ID with ID- prefix
+- Amount validation (positive numbers)
+- Currency selector (ETB and USD)
+- Recipient details with account validation
+- Form validation with yup validation schemas
+- Loading state and success feedback
+
+### 2. Live Payment Feed
+- **Search**: By Payment ID (real-time)
+- **Filters**: By status (PENDING, IN_PROGRESS, COMPLETED, FAILED)
+- **Pagination**: 15 items per page with navigation controls
+- **Real-time Updates**: Auto-refresh every 3 seconds
+- **Status Badges**: Color-coded status indicators
+- **Actions**: Retry failed payments, view transaction logs
+
+### 3. Transaction Logs
+- Detailed payment history and processing steps
+- Timestamps for each transaction event
+- Error messages when payment fails
+- Modal dialog for focused inspection
+
+### 4. Rate Limit Warning
+- Displays current TPS (transactions per second)
+- Red warning when approaching 2 TPS limit
+- Updates in real-time as payments process
+- Located in analytics dashboard header
+
+### 5. Analytics Dashboard
+- **Status Distribution**: Pie/doughnut chart showing payment counts
+- **TPS Trend**: Line chart tracking transactions over time
+- **Key Metrics**: Total payments, completion rate, average processing time
+- **Real-time Updates**: Refreshes every 5 seconds
+
+## User Interactions
+
+### Submitting a Payment
+1. Click "Create Payment" button
+2. Fill in payment details (amount, currency, recipient)
+3. Click "Submit Payment"
+4. Payment appears in feed as PENDING
+5. Status automatically transitions (PENDING → IN_PROGRESS → COMPLETED/FAILED)
+
+### Retrying a Failed Payment
+1. Find failed payment in the feed
+2. Click "Retry" button on the failed payment row
+3. Status changes to PENDING
+4. Payment re-enters the processing queue
+
+### Viewing Transaction Logs
+1. Click the "view" button on any payment
+2. Modal opens showing payment history
+3. View all processing steps and timestamps
+4. Close modal to return to table
+
+### Monitoring Analytics
+1. Click "Analytics" tab
+2. View real-time charts and metrics
+3. Check TPS warning indicator
+4. Monitor status distribution and trends
+
+## Trade-offs & Notes
+
+### Design Decisions
+
+1. **Mock Data System** - Used in-memory storage instead of database
+   - Trade-off: Data resets on page refresh (acceptable for demo)
+   - Benefit: No external dependencies, instant feedback
+
+2. **Server-side Filtering** - API routes handle search/filter logic
+   - Trade-off: Slightly more server load
+   - Benefit: Better data consistency, easier to scale
+
+3. **Auto-refresh Every 3 Seconds** - Simulates real-time without WebSockets
+   - Trade-off: Slightly higher polling overhead
+   - Benefit: Simple implementation, works everywhere
+
+## Debugging
+
+### Check Real-time Updates
+Open browser DevTools → Network tab. You should see requests to `/api/payments` every 3 seconds.
+
+### View Mock Data State
+Check `data/mock.ts` to see current payment records and status transitions.
+
+### Test Rate Limiting
+Submit 3+ payments quickly to see TPS warning in analytics dashboard.
+
+## Deployment
+
+The deployment created and the project is accessible https://kifiya-challenge.vercel.app
+
+**Last Updated**: November 12 2025  
+**Status**: Complete & Production-Ready
