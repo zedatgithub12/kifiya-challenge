@@ -31,32 +31,36 @@ https://kifiya-challenge.vercel.app
 - **State Management**: custom Mock data  + TanStack Query cache
 - **TypeScript**: Full type safety throughout
 
-## Project Structure
 
+## 📂 Project Structure
+
+```text
 ├── app/
 │   ├── api/
 │   │   ├── payments/
-│   │   │   ├── route.ts             # GET: Fetch payments with filtering
+│   │   │   ├── route.ts             # GET: Fetch payments with filters
 │   │   │   └── [id]/retry/route.ts  # POST: Retry failed payment
 │   │   └── analytics/route.ts       # GET: Fetch analytics data
 │   ├── layout.tsx                   # Root layout with providers
 │   ├── page.tsx                     # Main dashboard page
-│   └── globals.css                  # Theme tokens and global styles
+│   └── globals.css                  # Global styles and theme tokens
 │
 ├── components/
-│   ├── kifiya-ui/                   # Custom UI components for this project
-│   └── ui/                          # Predefined shadcn/ui components
+│   ├── kifiya-ui/                   # Custom UI components
+│   └── ui/                          # shadcn/ui component library
 │
 ├── data/
-│   └── mock.ts                      # Helper for generating mock payment data
+│   └── mock.ts                      # Helper to generate mock data
 │
 ├── features/
 │   ├── payments/
-│   │   ├── components/              # Components specific to payment management
-│   │   └── index.tsx                # Main payment processing page component
-│   └── ...                          # Other feature folders (self-descriptive)
+│   │   ├── components/              # Feature-specific components
+│   │   └── index.tsx                # Payment processing page
+│   └── ...                          # Other feature folders
 │
 └── public/                          # Static assets
+
+```
 
 
 ## Setup Instructions
