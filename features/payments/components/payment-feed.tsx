@@ -21,6 +21,7 @@ import {
   Loader,
   ChevronLeft,
   ChevronRight,
+  RefreshCcwIcon,
 } from "lucide-react";
 import { getStatusColor } from "@/lib/utils/get-status-color";
 import { PaymentForm } from "./payment-form";
@@ -34,10 +35,11 @@ export function PaymentFeed() {
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [retry, setRetry] = useState("");
 
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery<PaymentsResponse>({
+  const { data, isLoading, isFetching } = useQuery<PaymentsResponse>({
     queryKey: ["payments", selectedStatus, searchQuery, currentPage],
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -72,6 +74,7 @@ export function PaymentFeed() {
 
   const handleRetry = (id: string) => {
     retryMutation.mutate(id);
+    setRetry(id);
   };
 
   const handleRefresh = () => {
@@ -135,13 +138,16 @@ export function PaymentFeed() {
               variant="outline"
               size="sm"
               onClick={handleRefresh}
-              disabled={isLoading}
-              className="flex items-center gap-2 bg-transparent"
+              disabled={isLoading || isFetching}
+              className="flex items-center gap-2 bg-transparent min-w-20"
             >
-              <RefreshCw
-                className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-              />
-              Refresh
+              {isFetching ? (
+                <Loader
+                  className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+                />
+              ) : (
+                "Refresh"
+              )}
             </Button>
           </div>
 
@@ -215,7 +221,7 @@ export function PaymentFeed() {
                       className="border-b border-border/50 hover:bg-secondary/10 transition-colors"
                     >
                       <td className="px-4 py-3">
-                        <code className="text-xs font-mono text-primary">
+                        <code className="text-xs font-mono text-secondary font-medium">
                           {payment.id}
                         </code>
                       </td>
@@ -230,7 +236,7 @@ export function PaymentFeed() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <span className="font-medium text-foreground">
+                        <span className="font-bold text-foreground">
                           {formatMoney(payment.amount, payment.currency)}
                         </span>
                       </td>
@@ -262,7 +268,11 @@ export function PaymentFeed() {
                               onClick={() => handleRetry(payment.id)}
                               className="text-warning hover:text-warning"
                             >
-                              <RefreshCcw className="" />
+                              <RefreshCcwIcon
+                                className={`${
+                                  retry === payment?.id ? "animate-spin" : ""
+                                }`}
+                              />
                             </Button>
                           )}
                         </div>
@@ -276,12 +286,19 @@ export function PaymentFeed() {
 
           {pagination && pagination.total > 0 && (
             <div className="flex items-center justify-between border-t border-border pt-4">
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-muted-foreground hidden md:block">
                 Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
                 {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
                 of {pagination.total} payments
               </div>
-              <div className="flex items-center gap-2">
+
+              <div className="text-sm text-muted-foreground block md:hidden">
+                {(pagination.page - 1) * pagination.limit + 1} to{" "}
+                {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+                of {pagination.total}
+              </div>
+
+              <div className="flex items-center  md:gap-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -292,7 +309,7 @@ export function PaymentFeed() {
                   className="flex items-center gap-1"
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  Previous
+                  <span className="hidden md:block"> Previous </span>
                 </Button>
                 <div className="flex items-center gap-1 px-2">
                   {Array.from(
@@ -324,7 +341,7 @@ export function PaymentFeed() {
                   }
                   className="flex items-center gap-1"
                 >
-                  Next
+                  <span className="hidden md:block"> Next</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>

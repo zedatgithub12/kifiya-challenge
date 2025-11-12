@@ -22,6 +22,16 @@ import {
 } from "recharts";
 import { ArrowUp, TrendingUp, Clock, Zap } from "lucide-react";
 
+// a function that generate a mock time series data for the chart
+const generateTimeSeriesData = () =>
+  Array.from({ length: 12 }, (_, i) => ({
+    time: `${11 - i}:00`,
+    tps: (Math.random() * 1.8 + 0.2).toFixed(2),
+    processedCount: Math.floor(Math.random() * 50) + 20,
+  })).reverse();
+
+const timeSeriesData = generateTimeSeriesData();
+
 export function AnalyticsDashboard() {
   const { data: analytics, isLoading } = useQuery<AnalyticsData>({
     queryKey: ["analytics"],
@@ -30,7 +40,7 @@ export function AnalyticsDashboard() {
       if (!response.ok) throw new Error("Failed to fetch analytics");
       return response.json();
     },
-    refetchInterval: 5000, // Auto-refresh every 5 seconds
+    refetchInterval: 5000,
   });
 
   if (isLoading || !analytics) {
@@ -61,15 +71,8 @@ export function AnalyticsDashboard() {
     { name: "In Progress", value: analytics.inProgressCount, color: "#3b82f6" },
   ];
 
-  const timeSeriesData = Array.from({ length: 12 }, (_, i) => ({
-    time: `${11 - i}:00`,
-    tps: (Math.random() * 1.8 + 0.2).toFixed(2),
-    processedCount: Math.floor(Math.random() * 50) + 20,
-  })).reverse();
-
   return (
     <div className="space-y-6">
-      {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
           <CardHeader className="pb-3">
@@ -143,7 +146,6 @@ export function AnalyticsDashboard() {
         </Card>
       </div>
 
-      {/* Current TPS */}
       <Card className="bg-gradient-to-br from-warning/10 to-warning/5 border-warning/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -172,72 +174,6 @@ export function AnalyticsDashboard() {
         </CardContent>
       </Card>
 
-      {/* Charts */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Status Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment Status Distribution</CardTitle>
-            <CardDescription>Current breakdown by status</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, value }) => `${name}: ${value}`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* TPS Trend */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Throughput Over Time</CardTitle>
-            <CardDescription>
-              Transactions per second (last hour)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={timeSeriesData}>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="rgba(255,255,255,0.1)"
-                />
-                <XAxis dataKey="time" stroke="rgba(255,255,255,0.5)" />
-                <YAxis stroke="rgba(255,255,255,0.5)" />
-                <Tooltip
-                  contentStyle={{ backgroundColor: "#1a1a1a", border: "none" }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="tps"
-                  stroke="#7c3aed"
-                  dot={false}
-                  strokeWidth={2}
-                  name="TPS"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Payment Status Timeline */}
       <Card>
         <CardHeader>
           <CardTitle>Status Summary</CardTitle>
@@ -272,6 +208,68 @@ export function AnalyticsDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Payment Status Distribution</CardTitle>
+            <CardDescription>Current breakdown by status</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, value }) => `${name}: ${value}`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Throughput Over Time</CardTitle>
+            <CardDescription>
+              Transactions per second (last hour)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={timeSeriesData}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.1)"
+                />
+                <XAxis dataKey="time" stroke="rgba(255,255,255,0.5)" />
+                <YAxis stroke="rgba(255,255,255,0.5)" />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "#1a1a1a", border: "none" }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="tps"
+                  stroke="#7c3aed"
+                  dot={false}
+                  strokeWidth={2}
+                  name="TPS"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
