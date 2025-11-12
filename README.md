@@ -1,4 +1,4 @@
-# Kifiya Payment Processing Dashboard - 
+# Kifiya Payment Processing Dashboard
 
 A modern, payment operations dashboard built for the Kifiya payment-processing. This dashboard enables internal operations teams to manage payment orders, track statuses in real-time, debug failures, and gain system insights.
 
